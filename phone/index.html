@@ -1,17 +1,17 @@
-ï»¿<!doctype html><html lang="en"><head>
+<!doctype html><html lang="en"><head>
 <meta charset="utf-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/>
-<title>MinuteTag â€” Phone</title>
+<title>MinuteTag — Phone</title>
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin=""/>
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
 <style>body{font-family:system-ui,sans-serif;margin:1rem}button{padding:.8rem 1rem;border-radius:10px;border:1px solid #ddd}
 #map{height:280px;margin-top:1rem;border-radius:12px}.muted{color:#6b7280}.ok{color:#065f46;font-weight:600}.err{color:#991b1b;font-weight:600}</style>
 </head><body>
-<h2>MinuteTag â€” Accept & Share Location</h2>
-<p class="muted">Token: <code id="token">â€”</code></p>
+<h2>MinuteTag — Accept & Share Location</h2>
+<p class="muted">Token: <code id="token">—</code></p>
 <button id="acceptBtn">Accept & Share My Location</button>
 <p id="msg" class="muted"></p><div id="map" style="display:none;"></div>
 <script>
-const WORKER_BASE="https://YOUR-WORKER-SUBDOMAIN.workers.dev"; // <-- set me
+const WORKER_BASE="https://minutetag.YOURSUBDOMAIN.workers.dev"; // <-- set me
 const params=new URLSearchParams(location.search); const token=params.get("token"); document.getElementById("token").textContent=token||"missing";
 const btn=document.getElementById("acceptBtn"), msg=document.getElementById("msg"), mapDiv=document.getElementById("map");
 function say(t,c="muted"){msg.textContent=t; msg.className=c;}

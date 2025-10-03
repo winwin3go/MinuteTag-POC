@@ -1,6 +1,6 @@
-ï»¿<!doctype html><html lang="en"><head>
+<!doctype html><html lang="en"><head>
 <meta charset="utf-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/>
-<title>MinuteTag â€” PC Dashboard</title>
+<title>MinuteTag — PC Dashboard</title>
 <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"></script>
 <style>
 body{font-family:system-ui,sans-serif;margin:2rem}.row{display:flex;gap:2rem;align-items:flex-start}
@@ -10,13 +10,13 @@ body{font-family:system-ui,sans-serif;margin:2rem}.row{display:flex;gap:2rem;ali
 .error{background:#fee2e2;color:#991b1b}table{border-collapse:collapse;margin-top:1rem;width:100%}
 th,td{border-bottom:1px solid #eee;padding:.5rem;text-align:left}code{background:#f3f4f6;padding:.2rem .4rem;border-radius:6px}
 </style></head><body>
-<h1>MinuteTag â€” PC Dashboard</h1>
+<h1>MinuteTag — PC Dashboard</h1>
 <div class="row">
   <div class="card">
     <button id="startBtn">Start MinuteTag</button>
     <div id="qr" class="card" style="display:none;"></div>
     <p id="linkWrap" style="display:none;">Link: <a id="link" target="_blank" rel="noopener"></a></p>
-    <p>Token: <code id="token">â€”</code></p>
+    <p>Token: <code id="token">—</code></p>
     <p>Status: <span id="status" class="status-pill pending">pending</span></p>
     <div id="coords" style="display:none;">
       <p>Lat/Lng: <span id="latlng"></span></p>
@@ -30,7 +30,7 @@ th,td{border-bottom:1px solid #eee;padding:.5rem;text-align:left}code{background
   </div>
 </div>
 <script>
-const WORKER_BASE="https://YOUR-WORKER-SUBDOMAIN.workers.dev"; // <-- set me
+const WORKER_BASE="https://minutetag.YOURSUBDOMAIN.workers.dev"; // <-- set me
 const startBtn=document.getElementById("startBtn"),tokenEl=document.getElementById("token"),
 statusEl=document.getElementById("status"),qrEl=document.getElementById("qr"),
 linkWrap=document.getElementById("linkWrap"),linkEl=document.getElementById("link"),
