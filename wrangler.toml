@@ -1,0 +1,10 @@
+﻿name = "minutetag"
+main = "src/index.js"
+compatibility_date = "2025-09-01"
+
+[[kv_namespaces]]
+binding = "TOKEN_STORE"
+id = "REPLACE_WITH_KV_NAMESPACE_ID"   # <-- update after you create KV
+
+[vars]
+PHONE_PAGE_BASE = "https://YOUR-STATIC-SITE/phone/"

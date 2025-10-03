@@ -1,0 +1,70 @@
+﻿<!doctype html><html lang="en"><head>
+<meta charset="utf-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>MinuteTag — PC Dashboard</title>
+<script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"></script>
+<style>
+body{font-family:system-ui,sans-serif;margin:2rem}.row{display:flex;gap:2rem;align-items:flex-start}
+.card{border:1px solid #e5e7eb;border-radius:12px;padding:1rem;box-shadow:0 1px 3px rgba(0,0,0,.06)}
+#qr{width:256px;height:256px}.status-pill{padding:.25rem .5rem;border-radius:999px;font-weight:600}
+.pending{background:#e5e7eb;color:#374151}.accepted{background:#10b9811a;color:#065f46;border:1px solid #10b98155}
+.error{background:#fee2e2;color:#991b1b}table{border-collapse:collapse;margin-top:1rem;width:100%}
+th,td{border-bottom:1px solid #eee;padding:.5rem;text-align:left}code{background:#f3f4f6;padding:.2rem .4rem;border-radius:6px}
+</style></head><body>
+<h1>MinuteTag — PC Dashboard</h1>
+<div class="row">
+  <div class="card">
+    <button id="startBtn">Start MinuteTag</button>
+    <div id="qr" class="card" style="display:none;"></div>
+    <p id="linkWrap" style="display:none;">Link: <a id="link" target="_blank" rel="noopener"></a></p>
+    <p>Token: <code id="token">—</code></p>
+    <p>Status: <span id="status" class="status-pill pending">pending</span></p>
+    <div id="coords" style="display:none;">
+      <p>Lat/Lng: <span id="latlng"></span></p>
+      <p>Timestamp: <span id="ts"></span></p>
+    </div>
+  </div>
+  <div class="card" style="flex:1;">
+    <h3>Receipts</h3>
+    <table><thead><tr><th>Time</th><th>Token</th><th>Status</th><th>Lat</th><th>Lng</th></tr></thead>
+    <tbody id="receipts"></tbody></table>
+  </div>
+</div>
+<script>
+const WORKER_BASE="https://YOUR-WORKER-SUBDOMAIN.workers.dev"; // <-- set me
+const startBtn=document.getElementById("startBtn"),tokenEl=document.getElementById("token"),
+statusEl=document.getElementById("status"),qrEl=document.getElementById("qr"),
+linkWrap=document.getElementById("linkWrap"),linkEl=document.getElementById("link"),
+coordsWrap=document.getElementById("coords"),latlngEl=document.getElementById("latlng"),
+tsEl=document.getElementById("ts"),receiptsTbody=document.getElementById("receipts");
+let pollTimer=null,currentToken=null;
+function setStatus(s){statusEl.textContent=s;statusEl.className="status-pill "+(s==="accepted"?"accepted":s==="pending"?"pending":"error");}
+async function startFlow(){
+  clearInterval(pollTimer);setStatus("pending");coordsWrap.style.display="none";latlngEl.textContent="";tsEl.textContent="";
+  try{
+    const res=await fetch(`${WORKER_BASE}/api/start`,{method:"POST",headers:{"content-type":"application/json"},body:"{}"});
+    const data=await res.json(); if(!res.ok) throw new Error(data.error||"Failed to start");
+    currentToken=data.token; tokenEl.textContent=currentToken;
+    linkEl.href=data.link; linkEl.textContent=data.link; linkWrap.style.display="block"; qrEl.style.display="block"; qrEl.innerHTML="";
+    QRCode.toCanvas(data.link,{width:256,margin:1},(err,canvas)=>{ if(err)console.error(err); qrEl.appendChild(canvas); });
+    pollTimer=setInterval(pollStatus,1500);
+  }catch(e){console.error(e);setStatus("error");}
+}
+async function pollStatus(){
+  if(!currentToken) return;
+  try{
+    const res=await fetch(`${WORKER_BASE}/api/status?token=${encodeURIComponent(currentToken)}`); const data=await res.json();
+    if(!res.ok) throw new Error(data.error||"Status error"); setStatus(data.status);
+    if(data.status==="accepted"&&typeof data.lat==="number"){
+      coordsWrap.style.display="block"; latlngEl.textContent=`${data.lat.toFixed(6)}, ${data.lng.toFixed(6)}`;
+      tsEl.textContent=new Date(data.ts).toLocaleString(); addReceiptRow(data); clearInterval(pollTimer);
+    } else if (data.status==="expired"){ addReceiptRow({token:data.token,status:"expired"}); clearInterval(pollTimer); }
+  }catch(e){console.error(e);setStatus("error");clearInterval(pollTimer);}
+}
+function addReceiptRow(data){
+  const tr=document.createElement("tr"); const time=new Date().toLocaleString();
+  tr.innerHTML=`<td>${time}</td><td><code>${currentToken||data.token||"n/a"}</code></td><td>${data.status||"accepted"}</td>
+                <td>${typeof data.lat==="number"?data.lat.toFixed(6):""}</td><td>${typeof data.lng==="number"?data.lng.toFixed(6):""}</td>`;
+  receiptsTbody.prepend(tr);
+}
+startBtn.addEventListener("click", startFlow);
+</script></body></html>
