@@ -1,0 +1,41 @@
+<!doctype html><html lang="en"><head>
+<meta charset="utf-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>MinuteTag — Phone</title>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin=""/>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
+<style>body{font-family:system-ui,sans-serif;margin:1rem}button{padding:.8rem 1rem;border-radius:10px;border:1px solid #ddd}
+#map{height:280px;margin-top:1rem;border-radius:12px}.muted{color:#6b7280}.ok{color:#065f46;font-weight:600}.err{color:#991b1b;font-weight:600}</style>
+</head><body>
+<h2>MinuteTag — Accept & Share Location</h2>
+<p class="muted">Token: <code id="token">—</code></p>
+<button id="acceptBtn">Accept & Share My Location</button>
+<p id="msg" class="muted"></p><div id="map" style="display:none;"></div>
+<script>
+const WORKER_BASE="https://minutetag.YOURSUBDOMAIN.workers.dev"; // <-- set me
+const params=new URLSearchParams(location.search); const token=params.get("token"); document.getElementById("token").textContent=token||"missing";
+const btn=document.getElementById("acceptBtn"), msg=document.getElementById("msg"), mapDiv=document.getElementById("map");
+function say(t,c="muted"){msg.textContent=t; msg.className=c;}
+btn.addEventListener("click", async ()=>{
+  if(!("geolocation" in navigator)) return say("Geolocation not supported on this device.","err");
+  if(!token) return say("Missing token.","err");
+  say("Requesting your location... (You may see a permission prompt)");
+  // Geolocation requires a secure context (HTTPS).  // :contentReference[oaicite:3]{index=3}
+  navigator.geolocation.getCurrentPosition(async (pos)=>{
+    const { latitude:lat, longitude:lng }=pos.coords; say("Location acquired. Sending...","ok");
+    // Map + marker
+    mapDiv.style.display="block"; const map=L.map("map").setView([lat,lng],16);
+    L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",{maxZoom:19,attribution:"&copy; OpenStreetMap"}).addTo(map);
+    const icon=new L.Icon({iconUrl:"https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-icon.png",
+      iconRetinaUrl:"https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-icon-2x.png",
+      shadowUrl:"https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-shadow.png",iconAnchor:[12,41]});
+    L.marker([lat,lng],{icon}).addTo(map);
+    try{
+      const res=await fetch(`${WORKER_BASE}/api/accept`,{method:"POST",headers:{"content-type":"application/json"},
+        body:JSON.stringify({token,lat,lng,ts:Date.now()})});
+      const data=await res.json(); if(!res.ok) throw new Error(data.error||"Server error");
+      say("Accepted & shared location. You may close this tab.","ok");
+    }catch(e){console.error(e); say("Failed to submit location.","err");}
+  },(err)=>{console.error(err); say("Location permission denied or unavailable.","err");},
+  {enableHighAccuracy:true,timeout:10000,maximumAge:0});
+});
+</script></body></html>

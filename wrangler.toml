@@ -1,0 +1,10 @@
+﻿name = "minutetag"
+main = "src/index.js"
+compatibility_date = "2025-09-01"
+
+[[kv_namespaces]]
+binding = "TOKEN_STORE"
+id = "ab6efaba4b4641a3bfacb0c1aa18854a"   
+
+[vars]
+PHONE_PAGE_BASE = "https://winwin3go.github.io/MinuteTag-POC/phone/"
